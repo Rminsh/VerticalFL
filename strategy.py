@@ -21,8 +21,8 @@ class Strategy(fl.server.strategy.FedAvg):
         self,
         labels,
         *,
-        fraction_fit=1,
-        fraction_evaluate=1,
+        fraction_fit=1.0,
+        fraction_evaluate=1.0,
         min_fit_clients=2,
         min_evaluate_clients=2,
         min_available_clients=2,
@@ -60,6 +60,9 @@ class Strategy(fl.server.strategy.FedAvg):
 
         # To store metrics
         self.loss_history = []
+        self.mae_history = []
+        self.r2_history = []
+        self.embeddings = None  # To store embeddings for evaluation
 
     def aggregate_fit(
         self,
@@ -87,6 +90,9 @@ class Strategy(fl.server.strategy.FedAvg):
         self.optimizer.step()
         self.optimizer.zero_grad()
 
+        # Store embeddings for evaluation
+        self.embeddings = embedding_server.detach()
+
         # Collect gradients to send back to clients
         # Each client gets the gradient corresponding to its embedding
         embedding_grads = embedding_server.grad.split(4, dim=1)
@@ -98,15 +104,23 @@ class Strategy(fl.server.strategy.FedAvg):
         self.loss_history.append(loss_value)
         print(f"Round {rnd} - Loss: {loss_value:.4f}")
 
+        # Perform evaluation
+        with torch.no_grad():
+            output = self.model(self.embeddings)
+            mae = torch.mean(torch.abs(output - self.label)).item()
+            total_variance = torch.var(self.label)
+            residual_variance = torch.var(self.label - output)
+            r2 = 1 - (residual_variance / total_variance)
+            r2 = r2.item()
+        self.mae_history.append(mae)
+        self.r2_history.append(r2)
+        print(f"Round {rnd} - Evaluation - MAE: {mae:.4f}, R²: {r2:.4f}")
+
         # Return the parameters (gradients) to clients
-        metrics_aggregated = {"loss": loss_value}
+        metrics_aggregated = {"loss": loss_value, "mae": mae, "r2": r2}
 
         return parameters_aggregated, metrics_aggregated
 
-    def aggregate_evaluate(
-        self,
-        rnd,
-        results,
-        failures,
-    ):
+    def aggregate_evaluate(self, rnd, results, failures):
+        # Server-side evaluation; no client metrics to aggregate
         return None, {}

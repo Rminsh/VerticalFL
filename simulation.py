@@ -8,13 +8,13 @@ from task import get_partitions_and_label
 
 partitions, labels = get_partitions_and_label()
 
-def client_fn(cid):
+def client_fn(cid: str):
     print(f"Creating client with cid: {cid}")
     # Map the cid to an index in the partitions list
     if cid in ["0", "1"]:
         cid_int = int(cid)
         data = partitions[cid_int]
-        return FlowerClient(cid_int, data)
+        return FlowerClient(cid_int, data).to_client()
     else:
         # If cid is not "0" or "1", we do not create a client
         print(f"Client with cid {cid} does not exist.")
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     strategy = Strategy(
         labels=labels,
         fraction_fit=1.0,            # Sample 100% of available clients
-        fraction_evaluate=0.0,       # Disable evaluation
+        fraction_evaluate=0.0,       # Disable evaluation rounds
         min_fit_clients=2,           # Minimum number of clients to be sampled for training
         min_available_clients=2,     # Minimum number of clients that need to be connected
         accept_failures=True         # Accept failures to handle clients that are not created
@@ -48,4 +48,24 @@ if __name__ == "__main__":
     plt.ylabel('Loss (MSE)')
     plt.grid(True)
     plt.savefig('loss_over_rounds.png')
+    plt.show()
+
+    # Plot MAE over rounds
+    plt.figure(figsize=(10, 5))
+    plt.plot(rounds, strategy.mae_history, marker='o', color='orange')
+    plt.title('Global Model MAE over Rounds')
+    plt.xlabel('Round')
+    plt.ylabel('Mean Absolute Error')
+    plt.grid(True)
+    plt.savefig('mae_over_rounds.png')
+    plt.show()
+
+    # Plot R² over rounds
+    plt.figure(figsize=(10, 5))
+    plt.plot(rounds, strategy.r2_history, marker='o', color='green')
+    plt.title('Global Model R² Score over Rounds')
+    plt.xlabel('Round')
+    plt.ylabel('R² Score')
+    plt.grid(True)
+    plt.savefig('r2_over_rounds.png')
     plt.show()
