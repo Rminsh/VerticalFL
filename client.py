@@ -11,7 +11,8 @@ class FlowerClient(fl.client.NumPyClient):
         # Standardize the data
         self.scaler = StandardScaler()
         self.train = torch.tensor(self.scaler.fit_transform(data)).float()
-        self.model = ClientModel(input_size=self.train.shape[1])
+        input_size = self.train.shape[1]
+        self.model = ClientModel(input_size=input_size, embedding_size=4)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
         self.embedding = None
 
