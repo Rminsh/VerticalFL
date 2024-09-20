@@ -8,12 +8,18 @@ from flwr.common import ndarrays_to_parameters, parameters_to_ndarrays
 class ServerModel(nn.Module):
     def __init__(self, input_size):
         super(ServerModel, self).__init__()
-        self.fc = nn.Linear(input_size, 1)
-        self.relu = nn.ReLU()
+        self.fc1 = nn.Linear(input_size, 128)  # Increased neurons
+        self.relu1 = nn.ReLU()
+        self.fc2 = nn.Linear(128, 64)
+        self.relu2 = nn.ReLU()
+        self.fc3 = nn.Linear(64, 1)  # Output layer
 
     def forward(self, x):
-        x = self.fc(x)
-        x = self.relu(x)
+        x = self.fc1(x)
+        x = self.relu1(x)
+        x = self.fc2(x)
+        x = self.relu2(x)
+        x = self.fc3(x)
         return x
 
 class Strategy(fl.server.strategy.FedAvg):
@@ -24,7 +30,7 @@ class Strategy(fl.server.strategy.FedAvg):
         fraction_fit=1.0,
         fraction_evaluate=1.0,  # Disable client-side evaluation
         min_fit_clients=5,
-        min_evaluate_clients=3,
+        min_evaluate_clients=5,
         min_available_clients=5,
         evaluate_fn=None,
         on_fit_config_fn=None,
@@ -49,7 +55,7 @@ class Strategy(fl.server.strategy.FedAvg):
             evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation_fn,
         )
         # The input size is sum of the embeddings from all clients
-        total_embedding_size = 4 * 5  # Each client outputs embedding of size 4
+        total_embedding_size = 16 * 5  # Each client outputs embedding of size 4
         self.model = ServerModel(total_embedding_size)
         self.initial_parameters = ndarrays_to_parameters(
             [val.cpu().numpy() for _, val in self.model.state_dict().items()]
@@ -95,7 +101,7 @@ class Strategy(fl.server.strategy.FedAvg):
 
         # Collect gradients to send back to clients
         # Each client gets the gradient corresponding to its embedding
-        embedding_sizes = [4] * 5  # Embedding sizes per client
+        embedding_sizes = [16] * 5  # Embedding sizes per client
         embedding_grads = embedding_server.grad.split(embedding_sizes, dim=1)
         np_grads = [grad.numpy() for grad in embedding_grads]
         parameters_aggregated = ndarrays_to_parameters(np_grads)

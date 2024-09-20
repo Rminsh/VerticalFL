@@ -5,20 +5,16 @@ import matplotlib.pyplot as plt
 from client import FlowerClient
 from strategy import Strategy
 from task import get_partitions_and_label
+from client import set_random_seeds
 
 partitions, labels = get_partitions_and_label()
 
 def client_fn(cid: str):
     print(f"Creating client with cid: {cid}")
-    # Map the cid to an index in the partitions list
-    if cid in ["0", "1", "2", "3", "4"]:
-        cid_int = int(cid)
-        data = partitions[cid_int]
-        return FlowerClient(cid_int, data).to_client()
-    else:
-        # If cid is not in our list, we do not create a client
-        print(f"Client with cid {cid} does not exist.")
-        return None
+    cid_int = int(cid)
+    set_random_seeds(42)  # Set random seeds for reproducibility
+    data = partitions[cid_int]
+    return FlowerClient(cid_int, data).to_client()
 
 if __name__ == "__main__":
     # Create the strategy with appropriate parameters
@@ -35,7 +31,7 @@ if __name__ == "__main__":
     hist = fl.simulation.start_simulation(
         client_fn=client_fn,
         num_clients=5,                 # Total number of clients
-        config=fl.server.ServerConfig(num_rounds=20),
+        config=fl.server.ServerConfig(num_rounds=60),
         strategy=strategy,
     )
 
