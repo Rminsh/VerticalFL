@@ -23,19 +23,19 @@ def get_partitions_and_label():
 
     # Partition the features among clients
     # Client 0 (Label holder)
-    client0_features = data[['composition_score', 'deep_sleep_in_minutes', 'duration_score']]
+    client0_features = data[['composition_score', 'minutes_awake']]
 
     # Client 1
-    client1_features = data[['duration', 'time_in_bed', 'deep_sleep_in_minutes']]
+    client1_features = data[['revitalization_score', 'deep_sleep_in_minutes', 'time_in_bed']]
 
     # Client 2
-    client2_features = data[['minutes_awake', 'restlessness']]
+    client2_features = data[['duration_score', 'efficiency', 'resting_heart_rate']]
 
     # Client 3
-    client3_features = data[['revitalization_score', 'duration_score', 'deep_sleep_in_minutes', 'efficiency']]
+    client3_features = data[['minutes_asleep', 'restlessness']]
 
     # Client 4
-    client4_features = data[['resting_heart_rate', 'minutes_asleep', 'deep_sleep_in_minutes', 'minutes_to_fall_asleep']]
+    client4_features = data[['minutes_after_wakeup', 'duration', 'minutes_to_fall_asleep']]
 
     # Convert features to numpy arrays
     partitions = [
