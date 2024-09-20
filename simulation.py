@@ -31,7 +31,7 @@ if __name__ == "__main__":
     hist = fl.simulation.start_simulation(
         client_fn=client_fn,
         num_clients=5,                 # Total number of clients
-        config=fl.server.ServerConfig(num_rounds=100),
+        config=fl.server.ServerConfig(num_rounds=70),
         strategy=strategy,
     )
 
