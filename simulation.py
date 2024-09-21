@@ -23,6 +23,7 @@ if __name__ == "__main__":
         fraction_fit=1.0,            # Sample 100% of available clients
         fraction_evaluate=0.0,       # Disable evaluation rounds
         min_fit_clients=5,           # Minimum number of clients to be sampled for training
+        min_evaluate_clients=5,     # Should be 0 since fraction_evaluate=0.0
         min_available_clients=5,     # Minimum number of clients that need to be connected
         accept_failures=True         # Accept failures to handle clients that are not created
     )
@@ -31,7 +32,7 @@ if __name__ == "__main__":
     hist = fl.simulation.start_simulation(
         client_fn=client_fn,
         num_clients=5,                 # Total number of clients
-        config=fl.server.ServerConfig(num_rounds=70),
+        config=fl.server.ServerConfig(num_rounds=100),
         strategy=strategy,
     )
 
