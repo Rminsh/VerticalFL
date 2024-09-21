@@ -77,6 +77,7 @@ class Strategy(fl.server.strategy.FedAvg):
         self.loss_history = []
         self.mae_history = []
         self.r2_history = []
+        self.rmse_history = []
         self.embeddings = None  # To store embeddings for evaluation
 
     def aggregate_fit(
@@ -128,9 +129,13 @@ class Strategy(fl.server.strategy.FedAvg):
             residual_variance = torch.var(self.label - output)
             r2 = 1 - (residual_variance / total_variance)
             r2 = r2.item()
+            mse = torch.mean((output - self.label) ** 2).item()
+            rmse = mse ** 0.5
         self.mae_history.append(mae)
         self.r2_history.append(r2)
-        print(f"Round {rnd} - Evaluation - MAE: {mae:.4f}, R²: {r2:.4f}")
+        # RMSE history
+        self.rmse_history.append(rmse)
+        print(f"Round {rnd} - Evaluation - MAE: {mae:.4f}, R²: {r2:.4f}, RMSE: {rmse:.4f}")
 
         # Return the parameters (gradients) to clients
         metrics_aggregated = {"loss": loss_value, "mae": mae, "r2": r2}

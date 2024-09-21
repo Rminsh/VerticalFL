@@ -32,7 +32,7 @@ if __name__ == "__main__":
     hist = fl.simulation.start_simulation(
         client_fn=client_fn,
         num_clients=5,                 # Total number of clients
-        config=fl.server.ServerConfig(num_rounds=100),
+        config=fl.server.ServerConfig(num_rounds=70),
         strategy=strategy,
     )
 
@@ -66,3 +66,14 @@ if __name__ == "__main__":
     plt.grid(True)
     plt.savefig('r2_over_rounds.png')
     plt.show()
+
+    if hasattr(strategy, 'rmse_history') and strategy.rmse_history:
+        plt.figure(figsize=(10, 5))
+        plt.plot(rounds, strategy.rmse_history, marker='o', color='red', label='RMSE')
+        plt.title('Global Model RMSE over Rounds')
+        plt.xlabel('Round')
+        plt.ylabel('Root Mean Squared Error')
+        plt.grid(True)
+        plt.legend()
+        plt.savefig('rmse_over_rounds.png')
+        plt.show()
