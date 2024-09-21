@@ -25,6 +25,7 @@ if __name__ == "__main__":
         labels=labels,
         fraction_fit=1.0,            # Sample 100% of available clients
         fraction_evaluate=0.0,       # Disable evaluation rounds
+        num_clients=num_clients,
         min_fit_clients=num_clients,           # Minimum number of clients to be sampled for training
         min_evaluate_clients=num_clients,     # Should be 0 since fraction_evaluate=0.0
         min_available_clients=num_clients,     # Minimum number of clients that need to be connected

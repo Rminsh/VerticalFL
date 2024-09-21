@@ -5,8 +5,6 @@ import torch.nn as nn
 import torch.optim as optim
 from flwr.common import ndarrays_to_parameters, parameters_to_ndarrays
 
-num_clients = 5
-
 class ServerModel(nn.Module):
     def __init__(self, input_size):
         super(ServerModel, self).__init__()
@@ -39,9 +37,10 @@ class Strategy(fl.server.strategy.FedAvg):
         *,
         fraction_fit=1.0,
         fraction_evaluate=1.0,  # Disable client-side evaluation
-        min_fit_clients=num_clients,
-        min_evaluate_clients=num_clients,
-        min_available_clients=num_clients,
+        num_clients,
+        min_fit_clients,
+        min_evaluate_clients,
+        min_available_clients,
         evaluate_fn=None,
         on_fit_config_fn=None,
         on_evaluate_config_fn=None,
@@ -64,8 +63,9 @@ class Strategy(fl.server.strategy.FedAvg):
             fit_metrics_aggregation_fn=fit_metrics_aggregation_fn,
             evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation_fn,
         )
+        self.num_clients=num_clients
         # The input size is sum of the embeddings from all clients
-        total_embedding_size = 16 * num_clients  # Each client outputs embedding of size 16
+        total_embedding_size = 16 * self.num_clients  # Each client outputs embedding of size 16
         self.model = ServerModel(total_embedding_size)
         # self.model = LinearRegressionModel(total_embedding_size)
         self.initial_parameters = ndarrays_to_parameters(
@@ -113,7 +113,7 @@ class Strategy(fl.server.strategy.FedAvg):
 
         # Collect gradients to send back to clients
         # Each client gets the gradient corresponding to its embedding
-        embedding_sizes = [16] * num_clients  # Embedding sizes per client
+        embedding_sizes = [16] * self.num_clients  # Embedding sizes per client
         embedding_grads = embedding_server.grad.split(embedding_sizes, dim=1)
         np_grads = [grad.numpy() for grad in embedding_grads]
         parameters_aggregated = ndarrays_to_parameters(np_grads)
