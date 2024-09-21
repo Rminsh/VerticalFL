@@ -48,13 +48,25 @@ def get_partitions_and_label():
 
     return partitions, labels
 
-class ClientModel(nn.Module):
+class MLPClientModel(nn.Module):
     def __init__(self, input_size, embedding_size=16):
-        super(ClientModel, self).__init__()
+        super(MLPClientModel, self).__init__()
         self.fc = nn.Linear(input_size, embedding_size)
         self.relu = nn.ReLU()
 
     def forward(self, x):
         x = self.fc(x)
         x = self.relu(x)
+        return x
+
+class LinearRegressionClientModel(nn.Module):
+    def __init__(self, input_size, embedding_size=16):
+        super(LinearRegressionClientModel, self).__init__()
+        self.linear = nn.Linear(input_size, embedding_size)
+        # No activation for linear regression; remove ReLU if present
+        # self.relu = nn.ReLU()  # Remove if present
+
+    def forward(self, x):
+        x = self.linear(x)
+        # x = self.relu(x)  # Remove if present
         return x

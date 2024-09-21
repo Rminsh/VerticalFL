@@ -22,6 +22,14 @@ class ServerModel(nn.Module):
         x = self.fc3(x)
         return x
 
+class LinearRegressionModel(nn.Module):
+    def __init__(self, input_size):
+        super(LinearRegressionModel, self).__init__()
+        self.linear = nn.Linear(input_size, 1)  # Single linear layer
+
+    def forward(self, x):
+        return self.linear(x)
+
 class Strategy(fl.server.strategy.FedAvg):
     def __init__(
         self,
@@ -55,8 +63,9 @@ class Strategy(fl.server.strategy.FedAvg):
             evaluate_metrics_aggregation_fn=evaluate_metrics_aggregation_fn,
         )
         # The input size is sum of the embeddings from all clients
-        total_embedding_size = 16 * 5  # Each client outputs embedding of size 4
+        total_embedding_size = 16 * 5  # Each client outputs embedding of size 16
         self.model = ServerModel(total_embedding_size)
+        # self.model = LinearRegressionModel(total_embedding_size)
         self.initial_parameters = ndarrays_to_parameters(
             [val.cpu().numpy() for _, val in self.model.state_dict().items()]
         )
